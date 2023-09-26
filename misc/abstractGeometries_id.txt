@@ -1,0 +1,8 @@
+sphere 0
+cube 1
+cylinder 2
+torus 3
+pyramid 4
+spiral 5
+torusKnot 6
+doubleCone 7

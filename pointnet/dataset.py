@@ -8,6 +8,7 @@ import sys
 from tqdm import tqdm 
 import json
 from plyfile import PlyData, PlyElement
+import trimesh
 
 def get_segmentation_classes(root):
     catfile = os.path.join(root, 'synsetoffset2category.txt')
@@ -151,25 +152,51 @@ class ModelNetDataset(data.Dataset):
         self.split = split
         self.data_augmentation = data_augmentation
         self.fns = []
+        # current_path = os.getcwd()
+        # print(current_path)
+        # trainFilePath = '../../trainval.txt'
+        # try:
+        #   with open(trainFilePath, 'r') as file:
+        #       # Your code to read from the file
+        #       pass
+        # except FileNotFoundError:
+        #     print("File not found:", trainFilePath)
+        # except IsADirectoryError:
+        #   print("Is a directory:", trainFilePath)
+        # print(os.path.join(root, '{}.txt'.format(self.split)))
         with open(os.path.join(root, '{}.txt'.format(self.split)), 'r') as f:
             for line in f:
                 self.fns.append(line.strip())
 
         self.cat = {}
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../misc/modelnet_id.txt'), 'r') as f:
+        # print(os.path.dirname(os.path.realpath(__file__)))
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../misc/airplanes_id.txt'), 'r') as f:
             for line in f:
                 ls = line.strip().split()
                 self.cat[ls[0]] = int(ls[1])
 
-        print(self.cat)
+        print(f'{self.cat}')
         self.classes = list(self.cat.keys())
 
     def __getitem__(self, index):
         fn = self.fns[index]
         cls = self.cat[fn.split('/')[0]]
-        with open(os.path.join(self.root, fn), 'rb') as f:
-            plydata = PlyData.read(f)
-        pts = np.vstack([plydata['vertex']['x'], plydata['vertex']['y'], plydata['vertex']['z']]).T
+
+        # with open(os.path.join(self.root, fn), 'rb') as f:
+        #     plydata = PlyData.read(f)
+        # pts = np.vstack([plydata['vertex']['x'], plydata['vertex']['y'], plydata['vertex']['z']]).T
+
+        mesh = trimesh.load(os.path.join(self.root, fn))
+        vertices = mesh.vertices
+        x = []
+        y = []
+        z = []
+        for vertex in vertices:
+          x.append(vertex[0])
+          y.append(vertex[1])
+          z.append(vertex[2])
+        pts = np.vstack([x, y, z]).T
+
         choice = np.random.choice(len(pts), self.npoints, replace=True)
         point_set = pts[choice, :]
 

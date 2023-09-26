@@ -138,13 +138,19 @@ class PointNetCls(nn.Module):
         self.bn1 = nn.BatchNorm1d(512)
         self.bn2 = nn.BatchNorm1d(256)
         self.relu = nn.ReLU()
-
-    def forward(self, x):
+    
+    ### Modified output to get features before fc3 if return_features is set to True
+    def forward(self, x, return_features=False):
         x, trans, trans_feat = self.feat(x)
         x = F.relu(self.bn1(self.fc1(x)))
         x = F.relu(self.bn2(self.dropout(self.fc2(x))))
+        feature = x
         x = self.fc3(x)
-        return F.log_softmax(x, dim=1), trans, trans_feat
+        
+        if return_features:
+            return feature, trans, trans_feat
+        else:
+            return F.log_softmax(x, dim=1), trans, trans_feat
 
 
 class PointNetDenseCls(nn.Module):

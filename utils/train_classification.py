@@ -60,6 +60,17 @@ elif opt.dataset_type == 'modelnet40':
         split='test',
         npoints=opt.num_points,
         data_augmentation=False)
+elif opt.dataset_type == 'abstractGeometries':
+    dataset = ModelNetDataset(
+        root=opt.dataset,
+        npoints=opt.num_points,
+        split='trainval')
+
+    test_dataset = ModelNetDataset(
+        root=opt.dataset,
+        split='test',
+        npoints=opt.num_points,
+        data_augmentation=False)
 else:
     exit('wrong dataset type')
 
@@ -130,7 +141,9 @@ for epoch in range(opt.nepoch):
             print('[%d: %d/%d] %s loss: %f accuracy: %f' % (epoch, i, num_batch, blue('test'), loss.item(), correct.item()/float(opt.batchSize)))
 
     torch.save(classifier.state_dict(), '%s/cls_model_%d.pth' % (opt.outf, epoch))
+print('Finish training.\n')
 
+print('Start testing.')
 total_correct = 0
 total_testset = 0
 for i,data in tqdm(enumerate(testdataloader, 0)):
@@ -145,4 +158,4 @@ for i,data in tqdm(enumerate(testdataloader, 0)):
     total_correct += correct.item()
     total_testset += points.size()[0]
 
-print("final accuracy {}".format(total_correct / float(total_testset)))
+print("test accuracy {}".format(total_correct / float(total_testset)))

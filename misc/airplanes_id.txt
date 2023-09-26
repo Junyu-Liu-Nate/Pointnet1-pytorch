@@ -1,0 +1,5 @@
+jet1 0
+jet2 1
+propeller 2
+fighter 3
+fantasy 4
